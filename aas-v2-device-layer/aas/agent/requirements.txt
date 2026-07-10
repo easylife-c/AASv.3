@@ -1,0 +1,6 @@
+aiomqtt>=2.0
+pyserial>=3.5
+pydantic>=2.5
+PyYAML>=6.0
+# gpiozero is only needed on the real Pi (mock_hardware: false).
+# On Raspberry Pi OS Bookworm it is preinstalled; otherwise: pip install gpiozero lgpio

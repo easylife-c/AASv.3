@@ -1,0 +1,46 @@
+# AAS v2 Pi agent configuration.
+# Everything the agent needs lives here — no magic numbers in code.
+
+node_id: node-1          # second node = copy this file, change to node-2
+mock_hardware: true      # true = no GPIO/serial required; synthetic sensors, printed pumps
+data_dir: ./data         # SQLite state lives here
+
+serial:
+  port: /dev/ttyACM0     # Arduino Uno over USB (check with `ls /dev/ttyACM*`)
+  baud: 115200
+  frame_timeout_sec: 20  # no valid frame for this long -> sensors considered stale
+
+mqtt:
+  host: localhost        # Mosquitto runs on the Pi itself
+  port: 1883
+  username: null
+  password: null
+
+pumps:
+  # flow_ml_per_sec MUST be calibrated per pump: run each pump into a measuring
+  # cup for 10 s, divide. Tube length and head height change the real rate.
+  water: { pin: 27, flow_ml_per_sec: 8.5 }
+  N:     { pin: 22, flow_ml_per_sec: 8.5 }
+  P:     { pin: 23, flow_ml_per_sec: 8.5 }
+  K:     { pin: 24, flow_ml_per_sec: 8.5 }
+
+safety:
+  max_pump_seconds: 90            # hard runtime ceiling regardless of requested volume
+  max_dose_ml: 500                # single-dose ceiling
+  daily_cap_ml:                   # per-pump 24h volume ceilings (Bangkok-day)
+    water: 2000
+    N: 600
+    P: 600
+    K: 600
+  min_seconds_between_doses: 3600 # per-pump cooldown
+  telemetry_max_age_sec: 60       # automation refuses to act on stale sensor data
+
+irrigation:
+  moisture_dry_pct: 30.0          # below this = "dry" (calibrate against your probe)
+  consecutive_dry_readings: 3     # debounce: N frames in a row must agree
+  dose_ml: 200
+  check_interval_sec: 600
+  max_no_effect_doses: 3          # moisture didn't rise after N doses -> alarm + stop
+
+tanks:
+  default_level_ml: 1000
